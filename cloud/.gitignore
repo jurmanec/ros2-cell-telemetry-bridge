@@ -1,0 +1,11 @@
+# Cloud floor local artifacts
+.venv/
+venv/
+node_modules/
+.serverless/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.requirements/
+.python-version

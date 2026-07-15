@@ -1,0 +1,26 @@
+services:
+  ingest:
+    build: ./stub_ingest
+    ports:
+      - "8080:8080"
+
+  cell_publisher:
+    image: ${EDGE_IMAGE:-p3-edge:jazzy}
+    command: ["ros2", "run", "cell_sim", "cell_publisher"]
+    depends_on:
+      - ingest
+
+  cell_bridge:
+    image: ${EDGE_IMAGE:-p3-edge:jazzy}
+    command:
+      [
+        "ros2", "run", "cell_bridge", "cell_bridge_node",
+        "--ros-args",
+        "-p", "ingest_url:=http://ingest:8080/v1/telemetry/batch",
+        "-p", "cell_id:=cell-001",
+        "-p", "batch_size:=5",
+        "-p", "flush_period_sec:=1.0",
+      ]
+    depends_on:
+      - ingest
+      - cell_publisher

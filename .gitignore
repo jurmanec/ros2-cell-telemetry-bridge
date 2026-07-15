@@ -1,0 +1,39 @@
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Secrets and local env
+.env
+**/.env
+!.env.example
+!**/.env.example
+
+# Cursor / agent (local session + private profile notes)
+.cursor/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.venv/
+**/venv/
+
+# Node / Serverless
+**/node_modules/
+**/.serverless/
+
+# ROS / colcon (edge)
+edge/ws/build/
+edge/ws/install/
+edge/ws/log/
+edge/ws/compile_commands.json
+edge/ws/.cache/
+edge/build/
+edge/install/
+edge/log/
+**/.cache/
+
+# Misc
+*.log

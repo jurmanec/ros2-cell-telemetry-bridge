@@ -1,0 +1,14 @@
+{
+  "name": "p3-cell-telemetry-cloud",
+  "private": true,
+  "description": "P3 M3 cloud floor (Serverless Framework)",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "remove": "serverless remove",
+    "info": "serverless info",
+    "smoke": "python3 scripts/smoke_ingest.py"
+  },
+  "devDependencies": {
+    "serverless": "^3.39.0"
+  }
+}

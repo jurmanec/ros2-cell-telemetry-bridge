@@ -1,0 +1,25 @@
+{
+  "name": "P3 edge (ROS 2 Jazzy)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/edge",
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "llvm-vs-code-extensions.vscode-clangd"
+      ],
+      "settings": {
+        "clangd.arguments": [
+          "--compile-commands-dir=/workspaces/edge/ws"
+        ]
+      }
+    }
+  },
+  "postCreateCommand": "bash -lc 'source /opt/ros/jazzy/setup.bash && cd /workspaces/edge/ws && colcon build --packages-up-to cell_sim cell_bridge --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON && /workspaces/edge/scripts/refresh_compile_commands.sh'",
+  "containerEnv": {
+    "ROS_DISTRO": "jazzy"
+  }
+}

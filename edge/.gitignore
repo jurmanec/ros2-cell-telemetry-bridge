@@ -1,0 +1,8 @@
+# Colcon (edge workspace)
+ws/build/
+ws/install/
+ws/log/
+ws/compile_commands.json
+ws/.cache/
+
+.DS_Store
