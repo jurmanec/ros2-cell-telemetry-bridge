@@ -1,5 +1,7 @@
 # P3 Project Plan: Hybrid Smart Industrial & Infrastructure Asset Monitoring Platform
 
+**Status:** Historical (pre-charter; broader vision than shipped v1 — see [CHARTER.md](../CHARTER.md) and [SHIPPED.md](../SHIPPED.md)).
+
 ## Project Overview
 **One-liner**: A telemetry and monitoring platform that connects edge devices (industrial cells, robots, infrastructure sensors) to cloud-based predictive health and alerting systems.
 

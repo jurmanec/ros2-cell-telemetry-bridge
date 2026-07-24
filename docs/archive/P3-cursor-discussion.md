@@ -1,8 +1,8 @@
 # P3 suggestion — Industrial cell telemetry bridge
 
-**Status:** Proposal (not started)  
+**Status:** Historical (pre-charter; superseded by [CHARTER.md](../CHARTER.md) and v1 freeze)  
 **Suggested:** 2026-07-13  
-**Context:** Aligns with [Developer_Profile.md](../../.cursor/internal/Developer_Profile.md) career transition goals and the direction noted in [Forward_Looking.md](../../.cursor/internal/Forward_Looking.md). Complements finished/paused portfolio work in [P0.md](../../.cursor/internal/P0.md), [P1.md](../../.cursor/internal/P1.md), and [P2.md](../../.cursor/internal/P2.md).
+**Context:** Early planning note toward C++/ROS 2 + industrial edge→cloud, after prior portfolio work on serverless middleware, orchestration, and anomaly monitoring. Private career notes are not in this repo.
 
 ---
 
