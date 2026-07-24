@@ -1,7 +1,7 @@
 # Industrial Cell Telemetry Bridge
 
 **Status:** v1 frozen (2026-07-15) · **License:** [MIT](LICENSE)  
-**GitHub:** `ros2-cell-telemetry-bridge` (portfolio P3)
+**GitHub:** [jurmanec/ros2-cell-telemetry-bridge](https://github.com/jurmanec/ros2-cell-telemetry-bridge) (portfolio P3)
 
 Simulated manufacturing-cell telemetry on a **C++ / ROS 2 Jazzy** edge, batched over HTTPS to a thin **AWS** ingest path that persists samples and emits **rule-based** health events as CloudWatch logs.
 
