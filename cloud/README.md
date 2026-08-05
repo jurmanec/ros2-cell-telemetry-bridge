@@ -100,7 +100,9 @@ Edge path (publisher → bridge → same URL/`api_key`) was verified in M3; see 
 
 ## Point the edge bridge at cloud
 
-Rebuild the edge image after pulling bridge `api_key` support, then run bridge with:
+Step-by-step (Docker Compose publisher + bridge, no stub): [docs/how-to/edge-to-aws.md](../docs/how-to/edge-to-aws.md).
+
+Short form (sourced workspace / Dev Container):
 
 ```bash
 ros2 run cell_bridge cell_bridge_node --ros-args \
@@ -109,10 +111,7 @@ ros2 run cell_bridge cell_bridge_node --ros-args \
   -p cell_id:=cell-001
 ```
 
-(or set the same params in Compose / `docker run`). Local stub demos can leave `api_key` empty.
-
-Keep `./scripts/run_m2_stack.sh` for local stub-only demos.
-
+Local stub demos can leave `api_key` empty. Keep `edge/scripts/run_m2_stack.sh` for stub-only demos.
 ## Remove
 
 ```bash

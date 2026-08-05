@@ -34,6 +34,11 @@ curl -sS -X POST http://localhost:8080/v1/telemetry/batch \
 
 Contracts: [telemetry-batch-http.md](../docs/contracts/telemetry-batch-http.md), [bridge-http-retry.md](../docs/bridge-http-retry.md), [ADR 0002](../docs/decisions/0002-bridge-transport.md).
 
+## Edge → AWS (live ingest)
+
+Do **not** use `run_m2_stack.sh` for cloud (it always hits the stub).  
+Guide: [docs/how-to/edge-to-aws.md](../docs/how-to/edge-to-aws.md).
+
 ## Dev Container (IDE / IntelliSense)
 
 1. Install **Dev Containers** (+ **clangd**; do not also enable Microsoft C/C++ IntelliSense).
