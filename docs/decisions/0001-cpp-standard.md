@@ -6,11 +6,11 @@
 
 ## Decision
 
-Use **C++20** for P3 edge packages (`cell_sim` and follow-ons).
+Use **C++20** for edge packages (`cell_sim` and follow-ons).
 
 ## Context
 
-Charter emphasizes modern C++. ROS 2 Jazzy supports compiling nodes at C++17+; C++20 is widely available in the Jazzy/Ubuntu 24.04 toolchain and matches portfolio learning goals without requiring C++23 availability everywhere.
+Charter emphasizes modern C++. ROS 2 Jazzy supports compiling nodes at C++17+; C++20 is widely available in the Jazzy/Ubuntu 24.04 toolchain and is a practical modern dialect without requiring C++23 availability everywhere.
 
 ## Consequences
 

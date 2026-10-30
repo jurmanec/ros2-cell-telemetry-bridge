@@ -76,4 +76,4 @@ More: [edge/README.md](edge/README.md)
 
 Possible follow-ons: SNS/Slack notify, richer logging, CI, a small model on the Dynamo series.
 
-Design notes (charter, freeze, milestones): [docs/](docs/) — start with [ARCHITECTURE](docs/ARCHITECTURE.md) and [SHIPPED vs deferred](docs/SHIPPED.md).
+Design notes (charter, architecture, milestones): [docs/](docs/) — start with [ARCHITECTURE](docs/ARCHITECTURE.md) and [SHIPPED vs deferred](docs/SHIPPED.md).

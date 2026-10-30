@@ -1,6 +1,6 @@
 # Edge (ROS 2 / C++)
 
-Manufacturing cell simulator + HTTP bridge for P3. Jazzy + `rclcpp`, Docker on macOS.
+Manufacturing cell simulator + HTTP bridge. Jazzy + `rclcpp`, Docker on macOS.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ chmod +x scripts/*.sh docker/entrypoint.sh
 ./scripts/echo_topic.sh             # terminal B
 ```
 
-## M2 stack — publisher + bridge + stub ingest
+## Local stack — publisher + bridge + stub ingest
 
 ```bash
 cd edge
@@ -52,8 +52,8 @@ Guide: [docs/how-to/edge-to-aws.md](../docs/how-to/edge-to-aws.md).
 edge/
   .devcontainer/       IDE container
   docker/              ROS runtime image
-  docker-compose.yml   M2: publisher + bridge + ingest stub
-  stub_ingest/         Python HTTP stub (M2)
+  docker-compose.yml   publisher + bridge + ingest stub
+  stub_ingest/         Python HTTP stub
   scripts/             build / run_publisher / echo_topic / run_m2_stack
   ws/src/cell_msgs/    CellTelemetry.msg
   ws/src/cell_sim/     cell publisher

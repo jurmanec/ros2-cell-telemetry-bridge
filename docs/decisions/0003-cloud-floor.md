@@ -6,7 +6,7 @@
 
 ## Decision
 
-Build a **thin, deployable AWS** cloud floor that accepts the existing HTTP batch contract, persists samples, evaluates a **rule-based** health check, and records alerts via **structured logs** (notify channels deferred).
+Build a **thin, deployable AWS** cloud path that accepts the existing HTTP batch contract, persists samples, evaluates a **rule-based** health check, and records alerts via **structured logs** (notify channels deferred).
 
 | Choice | Lock |
 |--------|------|
@@ -18,17 +18,17 @@ Build a **thin, deployable AWS** cloud floor that accepts the existing HTTP batc
 | Alert side effect | **Structured alert log** (CloudWatch); optional metric filter OK |
 | Auth | **API key** (API Gateway) or equivalent shared secret for demo |
 | Wire contract | Reuse [telemetry-batch-http.md](../contracts/telemetry-batch-http.md); HTTPS to API GW |
-| IaC | Prefer **Serverless Framework** (continuity with P0/P1) unless scaffold friction favors SAM |
+| IaC | **Serverless Framework** (SAM acceptable if scaffold friction favors it) |
 
 ## Context
 
-M3 requires credibility-floor cloud: real ingest, persistence, rule alert — not P0-parity ops and not a second operator console (P2).
+M3 needs a minimal deployable cloud path: real ingest, persistence, and a rule alert — not full ops maturity and not an operator console.
 
 Edge already POSTs JSON batches (M2). Cloud should swap behind the same path/body so `cell_bridge` only changes `ingest_url` (+ API key header when required).
 
-Developer inclination for M3: lean into **Python** on the cloud side (new direction / MLOps adjacency) while keeping **C++** on ROS nodes. Deploy to **real AWS**, not LocalStack-first.
+Prefer **Python** for the cloud handler while keeping **C++** on ROS nodes. Deploy to **real AWS**, not LocalStack-first.
 
-Alert options considered: log-only vs SNS/Slack. Log-only meets “observable,” protects momentum, and avoids making Slack (already shown in P2) the hero of M3.
+Alert options considered: log-only vs SNS/Slack. Log-only meets “observable” for v1 without adding a notify product surface.
 
 ## Options considered (summary)
 
@@ -44,7 +44,7 @@ Alert options considered: log-only vs SNS/Slack. Log-only meets “observable,�
 
 - Primary: any sample in the batch with `fault: true` → emit alert log (cell_id, cycle, reason).  
 - Optional add-on: `temp_c` above a configured threshold.  
-- Not in M3: learned baselines / ML (P3.1).
+- Not in M3: learned baselines / ML.
 
 ## Consequences
 
@@ -57,7 +57,7 @@ Alert options considered: log-only vs SNS/Slack. Log-only meets “observable,�
 
 ## Non-goals (M3)
 
-- P0-parity dashboards/alarms/CD sophistication  
+- Advanced dashboards, alarms, multi-stage CD  
 - Operator UI  
 - Exactly-once / full audit store  
 - Multi-cell tenancy beyond `cell_id` on the batch  

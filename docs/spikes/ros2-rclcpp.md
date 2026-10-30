@@ -21,7 +21,7 @@ Disposable code: [`spike/ros2/`](../../spike/ros2/).
 
 **Spike decision:** Edge path works via **Docker (Linux) + `rclcpp`**. Do not chase native macOS ROS2 for v1.
 
-**v1 distro lock:** **Jazzy** (developer prior exploratory experience; LTS through May 2029). Humble was used only to prove the Docker path; disposable spike image stays on Humble unless re-verified on Jazzy.
+**v1 distro lock:** **Jazzy** (LTS through May 2029). Humble was used only to prove the Docker path; disposable spike image stays on Humble unless re-verified on Jazzy.
 
 ---
 

@@ -1,4 +1,4 @@
-# P3 cloud floor (M3)
+# Cloud ingest
 
 AWS ingest for industrial cell telemetry batches. Locks: [ADR 0003](../docs/decisions/0003-cloud-floor.md).  
 Wire contract: [telemetry-batch-http.md](../docs/contracts/telemetry-batch-http.md).
@@ -96,7 +96,7 @@ cd cloud
 
 Asserts HTTP `202` + `alerts≥1`, a DynamoDB row for a unique smoke `cell_id`, and a CloudWatch log line containing `"event":"CELL_ALERT"`. Events: [cloud-ingest-events.md](../docs/contracts/cloud-ingest-events.md).
 
-Edge path (publisher → bridge → same URL/`api_key`) was verified in M3; see below. Smoke does not rebuild the ROS stack.
+Edge path (publisher → bridge → same URL/`api_key`) was verified on AWS `dev`; see below. Smoke does not rebuild the ROS stack.
 
 ## Point the edge bridge at cloud
 

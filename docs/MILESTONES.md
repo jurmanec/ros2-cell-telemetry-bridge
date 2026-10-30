@@ -1,7 +1,7 @@
 # v1 milestones
 
-**Status:** v1 complete / frozen (2026-07-15)  
-**Date:** 2026-07-13 (freeze 2026-07-15)  
+**Status:** v1 complete (2026-07-15)  
+**Date:** 2026-07-13 (complete 2026-07-15)  
 **Authority:** [CHARTER.md](CHARTER.md), [ARCHITECTURE.md](ARCHITECTURE.md), [SHIPPED.md](SHIPPED.md)
 
 Ordered thin slices toward charter **definition of done**. Prefer finishing one milestone before starting the next. Resolve TBDs only when a milestone needs them (short ADR if the choice matters).
@@ -19,7 +19,7 @@ Disposable spike under `spike/ros2/` stays historical; v1 work uses **ROS 2 Jazz
 | **M2** | Bridge | ✅ HTTPS JSON batches to stub ingest ([ADR 0002](decisions/0002-bridge-transport.md)) |
 | **M3** | Cloud floor | ✅ AWS ingest + DynamoDB + `CELL_ALERT` logs ([ADR 0003](decisions/0003-cloud-floor.md)) |
 | **M4** | Smoke + logs | ✅ `smoke_ingest.py` → HTTP + Dynamo + `CELL_ALERT` |
-| **M5** | Docs freeze | ✅ README demo path; [SHIPPED.md](SHIPPED.md); charter v1 frozen |
+| **M5** | Docs freeze | ✅ README demo path; [SHIPPED.md](SHIPPED.md); charter complete |
 
 ---
 
@@ -74,7 +74,7 @@ Disposable spike under `spike/ros2/` stays historical; v1 work uses **ROS 2 Jazz
 
 **Status:** Done (2026-07-15)
 
-**Goal:** Credibility-floor cloud path (thin but real).
+**Goal:** Minimal deployable cloud path (thin but real).
 
 **Locks:** [ADR 0003](decisions/0003-cloud-floor.md) — AWS API GW + Python Lambda + DynamoDB; log alerts; real `dev` deploy; reuse HTTP batch contract.
 
@@ -86,7 +86,7 @@ Disposable spike under `spike/ros2/` stays historical; v1 work uses **ROS 2 Jazz
 - ~~Alert side effect observable~~ — structured JSON in Lambda log lines (timestamp/request-id wrapper is normal)
 - ~~Cloud service choices recorded~~ — ADR 0003
 
-**Out:** P0-parity CD/alarms; SPA; learned baselines; SNS/Slack in M3 Done.
+**Out:** Full CI/CD and ops tooling; SPA; learned baselines; SNS/Slack in M3 Done.
 
 ---
 
@@ -117,27 +117,27 @@ Disposable spike under `spike/ros2/` stays historical; v1 work uses **ROS 2 Jazz
 
 **Status:** Done (2026-07-15)
 
-**Goal:** Portfolio-ready pause, P0/P2 style.
+**Goal:** Document scope and how to run demos.
 
 **Done when:**
 - ~~README: purpose, how to demo, link to charter/architecture~~ — root [README.md](../README.md)
 - ~~Explicit shipped vs deferred list~~ — [SHIPPED.md](SHIPPED.md)
-- ~~Charter status updated~~ — **v1 frozen** ([CHARTER.md](CHARTER.md))
-- ~~Open follow-ons listed~~ — P3.1 MLOps, optional polish, robotics depth in SHIPPED + README
+- ~~Charter status updated~~ — **v1 complete** ([CHARTER.md](CHARTER.md))
+- ~~Open follow-ons listed~~ — anomaly model, optional polish, robotics depth in SHIPPED + README
 
-**Out:** Starting P3.1 unless explicitly chosen next.
+**Out:** Starting follow-on work unless explicitly chosen next.
 
 ---
 
-## Parking lot (not v1 milestones)
+## Later / not scheduled
 
 - Operator SPA / thin read UI  
 - Custom DDS tuning, multi-machine ROS  
 - Fleet / multi-cell  
-- ONNX / learned anomaly (**P3.1**)  
+- ONNX / learned anomaly  
 
 ---
 
 ## Next action
 
-**v1 frozen.** Choose an explicit follow-on when ready (see [SHIPPED.md](SHIPPED.md)): **P3.1 MLOps**, optional polish, or deeper robotics — do not silently expand v1.
+**v1 complete.** Choose an explicit follow-on when ready (see [SHIPPED.md](SHIPPED.md)): anomaly model, optional polish, or deeper robotics — do not silently expand v1.

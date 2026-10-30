@@ -13,7 +13,7 @@ Per successful validated ingest of a batch:
 
 | Sink | Role |
 |------|------|
-| **DynamoDB** | Append-only historical samples (`pk=cell_id`, time-ordered `sk`) — demo proof + future P3.1 series |
+| **DynamoDB** | Append-only historical samples (`pk=cell_id`, time-ordered `sk`) — demo proof + runway for later analytics / models |
 | **CloudWatch Logs** | Structured JSON events — rule alerts and ingest outcome for smoke/debug |
 
 Rules evaluate the **in-memory batch** after persist; they do not re-read Dynamo. Alert side effect for v1 is **log-only** (SNS/Slack deferred).
