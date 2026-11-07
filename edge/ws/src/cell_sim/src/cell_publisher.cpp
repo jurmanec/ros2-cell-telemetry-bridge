@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include "cell_msgs/msg/cell_telemetry.hpp"
 #include "cell_sim/telemetry_sample.hpp"
@@ -15,9 +16,10 @@ using namespace std::chrono_literals;
 class CellPublisher : public rclcpp::Node {
  public:
   CellPublisher() : Node("cell_publisher"), cycle_(0) {
+    cell_id_ = declare_parameter<std::string>("cell_id", "cell-001");
     publisher_ = create_publisher<cell_msgs::msg::CellTelemetry>("cell/telemetry", 10);
     timer_ = create_wall_timer(500ms, [this]() { on_timer(); });
-    RCLCPP_INFO(get_logger(), "cell_publisher started (M1 CellTelemetry)");
+    RCLCPP_INFO(get_logger(), "cell_publisher started cell_id=%s", cell_id_.c_str());
   }
 
  private:
@@ -28,11 +30,12 @@ class CellPublisher : public rclcpp::Node {
     const bool fault = (cycle_ % 50 == 0);
 
     const auto message = cell_sim::make_telemetry_sample(
-      now(), cycle_, temperature_c, vibration, fault);
+      now(), cell_id_, cycle_, temperature_c, vibration, fault);
 
     RCLCPP_INFO(
       get_logger(),
-      "publishing: cycle=%llu temp_c=%.2f vibration=%.3f fault=%s",
+      "publishing: cell_id=%s cycle=%llu temp_c=%.2f vibration=%.3f fault=%s",
+      message.cell_id.c_str(),
       static_cast<unsigned long long>(message.cycle),
       message.temp_c,
       message.vibration,
@@ -40,6 +43,7 @@ class CellPublisher : public rclcpp::Node {
     publisher_->publish(message);
   }
 
+  std::string cell_id_;
   rclcpp::Publisher<cell_msgs::msg::CellTelemetry>::SharedPtr publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
   std::uint64_t cycle_;

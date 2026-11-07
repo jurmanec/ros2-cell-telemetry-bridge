@@ -33,6 +33,26 @@ class Handler(BaseHTTPRequestHandler):
             self._json_response(400, {"status": "error", "message": "invalid json"})
             return
 
+        if body.get("schema_version") == 2:
+            cell_id = body.get("cell_id")
+            if not isinstance(cell_id, str) or not cell_id.strip():
+                self._json_response(
+                    400, {"status": "error", "message": "cell_id must be a non-empty string"}
+                )
+                return
+            alarms = body.get("alarms", [])
+            if not isinstance(alarms, list):
+                self._json_response(400, {"status": "error", "message": "alarms must be an array"})
+                return
+            LOG.info(
+                "accepted weld cell_id=%s alarms=%d body=%s",
+                cell_id.strip(),
+                len(alarms),
+                json.dumps(body, separators=(",", ":")),
+            )
+            self._json_response(202, {"status": "ok", "accepted": 1, "alerts": len(alarms)})
+            return
+
         samples = body.get("samples")
         if not isinstance(samples, list):
             self._json_response(400, {"status": "error", "message": "samples must be an array"})

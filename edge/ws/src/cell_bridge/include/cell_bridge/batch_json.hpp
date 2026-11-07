@@ -8,13 +8,16 @@
 namespace cell_bridge {
 
 struct BatchConfig {
-  std::string cell_id{"cell-001"};
   int schema_version{1};
 };
 
-/** Serialize samples to the M2 HTTP batch JSON contract. */
+/**
+ * Serialize one cell's samples to the HTTP batch JSON contract.
+ * cell_id is the publisher's identity (every sample in the vector belongs to it).
+ */
 std::string samples_to_batch_json(
   const BatchConfig & config,
+  const std::string & cell_id,
   const std::vector<cell_msgs::msg::CellTelemetry> & samples);
 
 }  // namespace cell_bridge

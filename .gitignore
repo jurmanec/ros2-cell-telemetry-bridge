@@ -12,6 +12,8 @@
 
 # Cursor / agent (local session + private profile notes)
 .cursor/
+docs/internal/
+docs/planning/OPEN.md
 
 # Python
 **/__pycache__/

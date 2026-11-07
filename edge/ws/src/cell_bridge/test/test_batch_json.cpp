@@ -6,10 +6,10 @@
 TEST(BatchJson, SerializesContractShape)
 {
   cell_bridge::BatchConfig config;
-  config.cell_id = "cell-001";
   config.schema_version = 1;
 
   cell_msgs::msg::CellTelemetry sample;
+  sample.cell_id = "cell-001";
   sample.stamp.sec = 10;
   sample.stamp.nanosec = 20;
   sample.cycle = 3;
@@ -17,7 +17,7 @@ TEST(BatchJson, SerializesContractShape)
   sample.vibration = 0.16;
   sample.fault = true;
 
-  const std::string json = cell_bridge::samples_to_batch_json(config, {sample});
+  const std::string json = cell_bridge::samples_to_batch_json(config, sample.cell_id, {sample});
 
   EXPECT_NE(json.find("\"schema_version\":1"), std::string::npos);
   EXPECT_NE(json.find("\"cell_id\":\"cell-001\""), std::string::npos);
@@ -30,8 +30,7 @@ TEST(BatchJson, SerializesContractShape)
 TEST(BatchJson, EscapesCellId)
 {
   cell_bridge::BatchConfig config;
-  config.cell_id = "cell\"x";
-  const std::string json = cell_bridge::samples_to_batch_json(config, {});
+  const std::string json = cell_bridge::samples_to_batch_json(config, "cell\"x", {});
   EXPECT_NE(json.find("cell\\\"x"), std::string::npos);
 }
 

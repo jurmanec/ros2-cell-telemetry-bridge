@@ -1,14 +1,98 @@
 services:
-  ingest:
-    build: ./stub_ingest
+  # Local time-series store for the weld historian. Not started by a plain `docker compose up`.
+  influxdb:
+    profiles: ["weld"]
+    image: influxdb:2.7
     ports:
-      - "8080:8080"
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: p3
+      DOCKER_INFLUXDB_INIT_PASSWORD: p3-historian-dev
+      DOCKER_INFLUXDB_INIT_ORG: p3
+      DOCKER_INFLUXDB_INIT_BUCKET: weld
+      DOCKER_INFLUXDB_INIT_RETENTION: 7d
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: p3-historian-dev-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  # Writes every cell/weld_snapshot. Does not start a publisher and does not post to the cloud.
+  weld_historian:
+    profiles: ["weld"]
+    image: ${EDGE_IMAGE:-p3-edge:jazzy}
+    command:
+      [
+        "ros2", "run", "cell_historian", "weld_historian_node",
+        "--ros-args",
+        "-p", "influx_url:=http://influxdb:8086",
+        "-p", "influx_org:=p3",
+        "-p", "influx_bucket:=weld",
+        "-p", "influx_token:=p3-historian-dev-token",
+      ]
+    depends_on:
+      influxdb:
+        condition: service_healthy
+
+  # Two weld cells, historian, and bridge in one container so they share DDS.
+  # Reads INGEST_URL and INGEST_API_KEY from cloud/.env. Does not start weld_cell_publisher.
+  weld_demo:
+    profiles: ["weld"]
+    image: ${EDGE_IMAGE:-p3-edge:jazzy}
+    env_file:
+      - ../cloud/.env
+    volumes:
+      - ./scripts/run_weld_demo.sh:/run_weld_demo.sh:ro
+    command: ["/run_weld_demo.sh"]
+    depends_on:
+      influxdb:
+        condition: service_healthy
+
+  # ingest:
+  #   build: ./stub_ingest
+  #   ports:
+  #     - "8080:8080"
 
   cell_publisher:
     image: ${EDGE_IMAGE:-p3-edge:jazzy}
-    command: ["ros2", "run", "cell_sim", "cell_publisher"]
+    command:
+      [
+        "ros2", "run", "cell_sim", "cell_publisher",
+        "--ros-args",
+        "-p", "cell_id:=cell-001",
+      ]
+    # depends_on:
+    #   - ingest
+
+  # Not started by a plain `docker compose up`. Use: docker compose --profile weld up weld_cell_publisher
+  weld_cell_publisher:
+    profiles: ["weld"]
+    image: ${EDGE_IMAGE:-p3-edge:jazzy}
+    command:
+      [
+        "ros2", "run", "cell_sim", "weld_cell_publisher",
+        "--ros-args",
+        "-p", "cell_id:=WELD_CELL_07",
+      ]
+
+  # Posts weld snapshots to the local stub. The stub accepts schema_version 2 with 202.
+  weld_cell_bridge:
+    profiles: ["weld"]
+    image: ${EDGE_IMAGE:-p3-edge:jazzy}
+    command:
+      [
+        "ros2", "run", "cell_bridge", "weld_cell_bridge_node",
+        "--ros-args",
+        "-p", "ingest_url:=http://ingest:8080/v1/telemetry/batch",
+      ]
     depends_on:
-      - ingest
+      # - ingest
+      - weld_cell_publisher
 
   cell_bridge:
     image: ${EDGE_IMAGE:-p3-edge:jazzy}
@@ -17,10 +101,12 @@ services:
         "ros2", "run", "cell_bridge", "cell_bridge_node",
         "--ros-args",
         "-p", "ingest_url:=http://ingest:8080/v1/telemetry/batch",
-        "-p", "cell_id:=cell-001",
         "-p", "batch_size:=5",
         "-p", "flush_period_sec:=1.0",
       ]
     depends_on:
-      - ingest
+      # - ingest
       - cell_publisher
+
+volumes:
+  influxdb-data:

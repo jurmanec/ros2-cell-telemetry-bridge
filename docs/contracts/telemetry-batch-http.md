@@ -46,7 +46,7 @@ TLS: **not required for M2 stub** (plain HTTP). Production/M3 should use HTTPS; 
 | Field | Type | Notes |
 |-------|------|--------|
 | `schema_version` | number | `1` for v1 |
-| `cell_id` | string | Logical cell identity (param on bridge; default `cell-001`) |
+| `cell_id` | string | Copied from `CellTelemetry.cell_id` (publisher parameter; default `cell-001`). One POST is one cell |
 | `samples` | array | One or more samples from `CellTelemetry` |
 | `samples[].stamp_sec` / `stamp_nanosec` | number | From ROS `stamp` |
 | `samples[].cycle` | number | uint64 |
@@ -63,6 +63,7 @@ Empty `samples` arrays should not be POSTed.
 | Behavior | Default |
 |----------|---------|
 | Subscribe | `cell/telemetry` (`cell_msgs/msg/CellTelemetry`) |
+| Cell identity | Taken from each sample's `cell_id`. Mixed buffers are split so each POST is one cell. The bridge has no `cell_id` parameter |
 | Flush | When batch size ≥ **5** **or** **1.0 s** since last successful flush attempt |
 | Timeout | Connect/request ~**2 s** |
 | Retry | Up to **3** attempts; brief backoff (~200 ms, ~500 ms) on connection error or 5xx |

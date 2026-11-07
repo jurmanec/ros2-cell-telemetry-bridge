@@ -22,11 +22,12 @@ Lambda runtime is **python3.12** (ADR 0003). Serverless Framework v3’s bundled
 
 ```bash
 cd cloud
-cp .env.example .env   # then set INGEST_API_KEY to a strong secret
+cp .env.example .env   # set INGEST_API_KEY to a strong secret
+# after deploy, uncomment and set INGEST_URL to IngestUrl
 # optional in .env: TEMP_C_THRESHOLD=50
 ```
 
-`serverless.yml` has `useDotenv: true`, so deploy/print read `INGEST_API_KEY` from `.env` (or from a shell `export`, which still wins if set). Redeploy after changing `.env` so Lambda gets the new value.
+`serverless.yml` has `useDotenv: true`, so deploy/print read `INGEST_API_KEY` and `TEMP_C_THRESHOLD` from `.env` (a shell `export` still wins if set). Redeploy after changing those so Lambda gets the new value. `INGEST_URL` stays in `.env` for smoke and the edge bridge. Lambda does not receive it, so changing the URL does not require a redeploy.
 
 ## Test locally
 
@@ -64,14 +65,18 @@ npx serverless deploy --stage dev --region us-east-1
 npx serverless info --stage dev --region us-east-1
 ```
 
-Note the **IngestUrl** output.
+Note the **IngestUrl** output and set `INGEST_URL` in `.env` to that value.
 
 ## Curl check
 
+`INGEST_URL` in `.env` must be the **IngestUrl** from `serverless info`. Load the file, then POST:
+
 ```bash
-# Use IngestUrl from: npx serverless info --stage dev --region us-east-1
-URL='https://xxxx.execute-api.us-east-1.amazonaws.com/v1/telemetry/batch'
-curl -sS -w '\nHTTP %{http_code}\n' -X POST "$URL" \
+cd cloud
+set -a
+source .env
+set +a
+curl -sS -w '\nHTTP %{http_code}\n' -X POST "$INGEST_URL" \
   -H "Content-Type: application/json" \
   -H "x-api-key: $INGEST_API_KEY" \
   -d '{"schema_version":1,"cell_id":"cell-001","samples":[{"stamp_sec":1,"stamp_nanosec":0,"cycle":50,"temp_c":40.5,"vibration":0.12,"fault":true}]}'
@@ -85,11 +90,10 @@ If you see `{"message":"Not Found"}`, the request never hit Lambda. Common cause
 
 ## M4 smoke (one command)
 
-Requires deployed `dev` stack, AWS credentials, and `INGEST_API_KEY` in `.env` (same value Lambda has). Uses venv boto3 if present:
+Requires deployed `dev` stack, AWS credentials, and `INGEST_API_KEY` in `.env` (same value Lambda has). When `INGEST_URL` is set in `.env`, smoke posts there; otherwise it resolves **IngestUrl** from the stack. Uses venv boto3 if present:
 
 ```bash
 cd cloud
-# optional: export INGEST_URL='https://….execute-api.us-east-1.amazonaws.com/v1/telemetry/batch'
 .venv/bin/python scripts/smoke_ingest.py
 # or: npm run smoke
 ```
@@ -102,16 +106,18 @@ Edge path (publisher → bridge → same URL/`api_key`) was verified on AWS `dev
 
 Step-by-step (Docker Compose publisher + bridge, no stub): [docs/how-to/edge-to-aws.md](../docs/how-to/edge-to-aws.md).
 
-Short form (sourced workspace / Dev Container):
+Short form (ROS workspace already sourced, including the Dev Container). Load `cloud/.env` in that shell first (`set -a; source cloud/.env; set +a` from the repo root, or `source ../cloud/.env` from `edge/`). `INGEST_URL` must be uncommented.
 
 ```bash
 ros2 run cell_bridge cell_bridge_node --ros-args \
-  -p ingest_url:=https://xxxx.execute-api.us-east-1.amazonaws.com/v1/telemetry/batch \
-  -p api_key:=$INGEST_API_KEY \
-  -p cell_id:=cell-001
+  -p ingest_url:=$INGEST_URL \
+  -p api_key:=$INGEST_API_KEY
 ```
 
+`cell_id` comes from the publisher sample (`cell_publisher` parameter, default `cell-001`), not from this command.
+
 Local stub demos can leave `api_key` empty. Keep `edge/scripts/run_m2_stack.sh` for stub-only demos.
+
 ## Remove
 
 ```bash

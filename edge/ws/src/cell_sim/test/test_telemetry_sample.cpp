@@ -5,8 +5,9 @@
 
 TEST(TelemetrySample, FillsContractFields) {
   const rclcpp::Time stamp(1, 500000000, RCL_ROS_TIME);
-  const auto msg = cell_sim::make_telemetry_sample(stamp, 42ULL, 41.5, 0.16, true);
+  const auto msg = cell_sim::make_telemetry_sample(stamp, "cell-001", 42ULL, 41.5, 0.16, true);
 
+  EXPECT_EQ(msg.cell_id, "cell-001");
   EXPECT_EQ(msg.stamp.sec, 1);
   EXPECT_EQ(msg.stamp.nanosec, 500000000u);
   EXPECT_EQ(msg.cycle, 42ULL);
@@ -17,7 +18,7 @@ TEST(TelemetrySample, FillsContractFields) {
 
 TEST(TelemetrySample, FaultFalseByDefaultPath) {
   const rclcpp::Time stamp(0, 0, RCL_ROS_TIME);
-  const auto msg = cell_sim::make_telemetry_sample(stamp, 1ULL, 40.5, 0.12, false);
+  const auto msg = cell_sim::make_telemetry_sample(stamp, "cell-001", 1ULL, 40.5, 0.12, false);
   EXPECT_FALSE(msg.fault);
   EXPECT_EQ(msg.cycle, 1ULL);
 }

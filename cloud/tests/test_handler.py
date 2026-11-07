@@ -71,6 +71,98 @@ def test_handle_ingest_unauthorized():
     assert resp["statusCode"] == 401
 
 
+WELD = {
+    "schema_version": 2,
+    "timestamp": "2026-11-06T17:05:22.011192632Z",
+    "cell_id": "WELD_CELL_07",
+    "cell_type": "robotic_welding",
+    "status": "RUNNING",
+    "program": "DOOR_FRAME_WELD_V4",
+    "cycle_time_last_s": 42.1,
+    "parts_total_shift": 156,
+    "parts_scrap_shift": 3,
+    "oee_availability": 0.91,
+    "joints": [
+        {"axis": 1, "temp_c": 49.2, "current_a": 4.1},
+        {"axis": 2, "temp_c": 56.8, "current_a": 6.3},
+        {"axis": 3, "temp_c": 51.4, "current_a": 4.7},
+    ],
+    "process": {
+        "weld_current_a": 210,
+        "weld_voltage_v": 23.1,
+        "wire_feed_m_min": 7.4,
+        "arc_on_s": 19.6,
+        "gas_flow_l_min": 15.0,
+    },
+    "alarms": [],
+}
+
+
+def test_weld_snapshot_persists_without_alert():
+    os.environ["INGEST_API_KEY"] = "secret"
+    os.environ["SAMPLES_TABLE"] = "t"
+
+    mock_table = MagicMock()
+    event = {"headers": {"x-api-key": "secret"}, "body": json.dumps(WELD)}
+
+    with patch.object(handler, "_table", return_value=mock_table):
+        resp = handler.handle_ingest(event, None)
+
+    assert resp["statusCode"] == 202
+    body = json.loads(resp["body"])
+    assert body == {"status": "ok", "accepted": 1, "alerts": 0}
+    item = mock_table.put_item.call_args.kwargs["Item"]
+    assert item["pk"] == "WELD_CELL_07"
+    assert item["schema_version"] == 2
+    assert item["sk"].startswith("2026-11-06T17:05:22.011192632Z#")
+    assert item["joints"][1]["axis"] == 2
+    assert item["process"]["weld_current_a"] == handler.Decimal("210")
+    assert item["alarms"] == []
+
+
+def test_weld_alarm_emits_cell_alert(caplog):
+    os.environ["INGEST_API_KEY"] = "secret"
+    os.environ["SAMPLES_TABLE"] = "t"
+    payload = {
+        **WELD,
+        "status": "FAULTED",
+        "alarms": [
+            {
+                "code": "GAS_FLOW_LOW",
+                "severity": "warning",
+                "message": "Shielding gas flow below setpoint",
+            }
+        ],
+    }
+    event = {"headers": {"x-api-key": "secret"}, "body": json.dumps(payload)}
+
+    with patch.object(handler, "_table", return_value=MagicMock()), caplog.at_level("INFO"):
+        resp = handler.handle_ingest(event, None)
+
+    assert resp["statusCode"] == 202
+    assert json.loads(resp["body"])["alerts"] == 1
+    assert any('"event":"CELL_ALERT"' in r.message and "GAS_FLOW_LOW" in r.message for r in caplog.records)
+
+
+def test_weld_rejects_bad_shape():
+    os.environ["INGEST_API_KEY"] = "secret"
+    payload = {**WELD, "joints": []}
+    event = {"headers": {"x-api-key": "secret"}, "body": json.dumps(payload)}
+    resp = handler.handle_ingest(event, None)
+    assert resp["statusCode"] == 400
+
+
+def test_unknown_schema_version_rejected():
+    os.environ["INGEST_API_KEY"] = "secret"
+    event = {
+        "headers": {"x-api-key": "secret"},
+        "body": json.dumps({"schema_version": 3, "cell_id": "cell-001"}),
+    }
+    resp = handler.handle_ingest(event, None)
+    assert resp["statusCode"] == 400
+    assert "1 or 2" in json.loads(resp["body"])["message"]
+
+
 def test_handle_ingest_ok():
     os.environ["INGEST_API_KEY"] = "secret"
     os.environ["SAMPLES_TABLE"] = "t"

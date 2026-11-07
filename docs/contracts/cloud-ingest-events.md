@@ -40,7 +40,7 @@ All payloads are single-line JSON objects with a string **`event`** discriminato
 
 ### `CELL_ALERT`
 
-Emitted once per sample that trips a rule (`fault` and/or optional `temp_c` threshold).
+Emitted once per v1 sample that trips a rule (`fault` and/or optional `temp_c` threshold).
 
 | Field | Type | Notes |
 |-------|------|--------|
@@ -55,6 +55,21 @@ Emitted once per sample that trips a rule (`fault` and/or optional `temp_c` thre
 | `stamp_sec` | int | |
 | `stamp_nanosec` | int | |
 
+A `schema_version` 2 weld snapshot emits one `CELL_ALERT` per alarm. An empty `alarms` array emits none. Fields:
+
+| Field | Type | Notes |
+|-------|------|--------|
+| `event` | string | Always `CELL_ALERT` |
+| `alert` | bool | Always `true` |
+| `schema_version` | number | `2` |
+| `cell_id` | string | |
+| `timestamp` | string | UTC timestamp from the snapshot |
+| `status` | string | `RUNNING` or `FAULTED` |
+| `reason` | string | `alarm` |
+| `code` | string | Alarm code, for example `GAS_FLOW_LOW` |
+| `severity` | string | `info`, `warning`, or `error` |
+| `message` | string | Alarm text |
+
 ### `INGEST_OK`
 
 Emitted once after a batch is persisted and rules run.
@@ -63,8 +78,8 @@ Emitted once after a batch is persisted and rules run.
 |-------|------|--------|
 | `event` | string | Always `INGEST_OK` |
 | `cell_id` | string | |
-| `accepted` | int | Samples written |
-| `alerts` | int | Count of `CELL_ALERT`s for this batch |
+| `accepted` | int | v1 samples written, or `1` for one weld snapshot |
+| `alerts` | int | Count of `CELL_ALERT`s for this request |
 
 ### `INGEST_UNAUTHORIZED`
 

@@ -1,4 +1,4 @@
-# P3 edge image: ROS 2 Jazzy + cell_msgs + cell_sim + cell_bridge.
+# P3 edge image: ROS 2 Jazzy + cell_msgs + cell_sim + cell_bridge + cell_historian.
 FROM ros:jazzy-ros-base
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -15,9 +15,9 @@ COPY ws/src ./src
 
 SHELL ["/bin/bash", "-c"]
 RUN source /opt/ros/jazzy/setup.bash \
-    && colcon build --packages-up-to cell_sim cell_bridge \
+    && colcon build --packages-up-to cell_sim cell_bridge cell_historian \
     && source install/setup.bash \
-    && colcon test --packages-select cell_sim cell_bridge --event-handlers console_direct+ \
+    && colcon test --packages-select cell_sim cell_bridge cell_historian --event-handlers console_direct+ \
     && colcon test-result --verbose
 
 COPY docker/entrypoint.sh /entrypoint.sh

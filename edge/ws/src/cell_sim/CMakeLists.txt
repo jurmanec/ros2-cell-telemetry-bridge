@@ -19,7 +19,13 @@ target_include_directories(cell_publisher PUBLIC
   $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(cell_publisher rclcpp cell_msgs)
 
-install(TARGETS cell_publisher DESTINATION lib/${PROJECT_NAME})
+add_executable(weld_cell_publisher src/weld_cell_publisher.cpp)
+target_include_directories(weld_cell_publisher PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(weld_cell_publisher rclcpp cell_msgs)
+
+install(TARGETS cell_publisher weld_cell_publisher DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include)
 
 if(BUILD_TESTING)
@@ -28,6 +34,11 @@ if(BUILD_TESTING)
   target_include_directories(test_telemetry_sample PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
   ament_target_dependencies(test_telemetry_sample rclcpp cell_msgs)
+
+  ament_add_gtest(test_weld_snapshot test/test_weld_snapshot.cpp)
+  target_include_directories(test_weld_snapshot PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  ament_target_dependencies(test_weld_snapshot rclcpp cell_msgs)
 endif()
 
 ament_package()

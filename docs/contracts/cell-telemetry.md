@@ -28,6 +28,7 @@ Wire shape for simulated manufacturing-cell health samples from the edge publish
 
 | Field | Type | Meaning | Units / notes |
 |-------|------|---------|---------------|
+| `cell_id` | `string` | Identity of the publishing cell | Publisher parameter; default `cell-001` |
 | `stamp` | `builtin_interfaces/Time` | Sample time (node clock when published) | ROS time |
 | `cycle` | `uint64` | Monotonic simulated cycle count | Starts at 1 on first publish |
 | `temp_c` | `float64` | Simulated cell temperature | °C |
@@ -41,6 +42,7 @@ Source: [`edge/ws/src/cell_msgs/msg/CellTelemetry.msg`](../../edge/ws/src/cell_m
 ## Example (`ros2 topic echo /cell/telemetry`)
 
 ```yaml
+cell_id: cell-001
 stamp:
   sec: ...
   nanosec: ...
@@ -56,6 +58,7 @@ fault: false
 ## Compatibility notes
 
 - M0 used `std_msgs/String` key=value text; **superseded** by this message for M1+.
+- `cell_id` is set by the publisher. The bridge copies it onto the HTTP batch and does not take a `cell_id` parameter.
 - Field set is intentionally small; add fields via new msg version / ADR if needed—do not silently reinterpret existing fields.
 - Bridge/cloud (M2+) should treat unknown future fields as non-breaking only if using a versioned envelope (not required in v1).
 

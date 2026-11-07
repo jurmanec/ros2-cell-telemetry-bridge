@@ -1,6 +1,7 @@
 #include <curl/curl.h>
 
 #include <chrono>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -16,6 +17,7 @@ using namespace std::chrono_literals;
 
 /**
  * Subscribes to cell/telemetry, batches samples, POSTs JSON to ingest.
+ * cell_id comes from each sample (the publisher), not from a bridge parameter.
  * Contract: docs/contracts/telemetry-batch-http.md
  * Retry: docs/bridge-http-retry.md
  */
@@ -27,7 +29,6 @@ class CellBridgeNode : public rclcpp::Node {
     ingest_url_ = declare_parameter<std::string>(
       "ingest_url", "http://ingest:8080/v1/telemetry/batch");
     api_key_ = declare_parameter<std::string>("api_key", "");
-    batch_config_.cell_id = declare_parameter<std::string>("cell_id", "cell-001");
     batch_size_ = declare_parameter<int>("batch_size", 5);
     flush_period_sec_ = declare_parameter<double>("flush_period_sec", 1.0);
     max_attempts_ = declare_parameter<int>("max_attempts", 3);
@@ -45,8 +46,8 @@ class CellBridgeNode : public rclcpp::Node {
 
     RCLCPP_INFO(
       get_logger(),
-      "cell_bridge started ingest_url=%s cell_id=%s batch_size=%d api_key_set=%s",
-      ingest_url_.c_str(), batch_config_.cell_id.c_str(), batch_size_,
+      "cell_bridge started ingest_url=%s batch_size=%d api_key_set=%s",
+      ingest_url_.c_str(), batch_size_,
       api_key_.empty() ? "false" : "true");
   }
 
@@ -99,7 +100,27 @@ class CellBridgeNode : public rclcpp::Node {
 
   void deliver(const std::vector<cell_msgs::msg::CellTelemetry> & samples)
   {
-    const std::string body = cell_bridge::samples_to_batch_json(batch_config_, samples);
+    std::map<std::string, std::vector<cell_msgs::msg::CellTelemetry>> by_cell;
+    for (const auto & sample : samples) {
+      if (sample.cell_id.empty()) {
+        RCLCPP_ERROR(
+          get_logger(),
+          "dropping sample with empty cell_id cycle=%llu",
+          static_cast<unsigned long long>(sample.cycle));
+        continue;
+      }
+      by_cell[sample.cell_id].push_back(sample);
+    }
+    for (const auto & [cell_id, group] : by_cell) {
+      post_batch(cell_id, group);
+    }
+  }
+
+  void post_batch(
+    const std::string & cell_id,
+    const std::vector<cell_msgs::msg::CellTelemetry> & samples)
+  {
+    const std::string body = cell_bridge::samples_to_batch_json(batch_config_, cell_id, samples);
     bool delivered = false;
 
     for (int attempt = 1; attempt <= max_attempts_; ++attempt) {
@@ -108,7 +129,7 @@ class CellBridgeNode : public rclcpp::Node {
         RCLCPP_INFO(
           get_logger(),
           "ingest ok attempt=%d status=%ld samples=%zu cell_id=%s",
-          attempt, result.status, samples.size(), batch_config_.cell_id.c_str());
+          attempt, result.status, samples.size(), cell_id.c_str());
         delivered = true;
         break;
       }
@@ -116,8 +137,8 @@ class CellBridgeNode : public rclcpp::Node {
       const bool retryable = result.status == 0 || result.status >= 500;
       RCLCPP_WARN(
         get_logger(),
-        "ingest fail attempt=%d status=%ld error=%s samples=%zu retryable=%s",
-        attempt, result.status, result.error.c_str(), samples.size(),
+        "ingest fail attempt=%d status=%ld error=%s samples=%zu cell_id=%s retryable=%s",
+        attempt, result.status, result.error.c_str(), samples.size(), cell_id.c_str(),
         retryable ? "true" : "false");
 
       if (!retryable || attempt == max_attempts_) {
@@ -130,7 +151,7 @@ class CellBridgeNode : public rclcpp::Node {
       RCLCPP_ERROR(
         get_logger(),
         "ingest dropped batch samples=%zu cell_id=%s",
-        samples.size(), batch_config_.cell_id.c_str());
+        samples.size(), cell_id.c_str());
     }
   }
 

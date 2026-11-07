@@ -27,12 +27,13 @@ std::string escape_json_string(const std::string & in)
 
 std::string samples_to_batch_json(
   const BatchConfig & config,
+  const std::string & cell_id,
   const std::vector<cell_msgs::msg::CellTelemetry> & samples)
 {
   std::ostringstream oss;
   oss << '{'
       << "\"schema_version\":" << config.schema_version << ','
-      << "\"cell_id\":\"" << escape_json_string(config.cell_id) << "\","
+      << "\"cell_id\":\"" << escape_json_string(cell_id) << "\","
       << "\"samples\":[";
 
   for (size_t i = 0; i < samples.size(); ++i) {

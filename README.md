@@ -33,7 +33,7 @@ Needs a deployed `dev` stack and AWS credentials:
 
 ```bash
 cd cloud
-cp .env.example .env   # set INGEST_API_KEY
+cp .env.example .env   # set INGEST_API_KEY; set INGEST_URL after deploy
 npm install
 npx serverless deploy --stage dev --region us-east-1
 .venv/bin/pip install -r requirements.txt
