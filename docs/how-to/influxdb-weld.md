@@ -39,6 +39,8 @@ from(bucket: "weld")
   |> limit(n: 10)
 ```
 
+What each line does: [flux-query-long-to-wide-explanation.md](../concepts/influxdb/flux-query-long-to-wide-explanation.md).
+
 Each result row is one snapshot. Tags `cell_id` and `status` are columns, along with fields such as `weld_current_a`, `arc_on_s`, and `alarm_count`. Change `cell_id` or `limit` to see the other cell or more rows.
 
 An empty table means the historian has not written in that window. The demo container should be logging `historian wrote` about once a second for each cell.
@@ -60,5 +62,7 @@ This prints one line per field. The script in section 2 pivots those fields into
 
 ## Related
 
+- Line-by-line reading of the section 2 query: [flux-query-long-to-wide-explanation.md](../concepts/influxdb/flux-query-long-to-wide-explanation.md)
+- Grafana pointed at this bucket: [grafana-weld.md](grafana-weld.md)
 - Start the demo that fills this bucket: [weld-demo.md](weld-demo.md)
 - Reduced copies of the same cells in DynamoDB: [dynamodb-queries-p3-cell-telemetry-dev-samples.md](dynamodb-queries-p3-cell-telemetry-dev-samples.md)

@@ -1,13 +1,14 @@
 # Plan — v2 telemetry flow
 
-**Status:** Proposed  
+**Status:** Weld path done. Step 5 tabled.  
 **Date:** 2026-11-07  
+**Closed:** 2026-11-08  
 **Follows:** [weld-cell-snapshot.md](weld-cell-snapshot.md) (done)  
 **Shape:** [v2-architecture/README.md](../v2-architecture/README.md)
 
 The weld publisher, bridge, and version-2 ingest already move one full snapshot a second to DynamoDB. This plan changes that flow for the weld path only. The cell still publishes the full stream. A local historian keeps every snapshot. The bridge becomes configurable and forwards a reduced stream. Several weld cells run at once. The historian shows the full history. The cloud store shows only what the bridge forwarded.
 
-`CellTelemetry` / `schema_version` 1 stays as it is. A mobile-robot path is a later decision, not a step in this plan.
+`CellTelemetry` / `schema_version` 1 stays as it is. The next-path choice is step 5, and it is tabled.
 
 ---
 
@@ -56,21 +57,19 @@ The historian is a separate subscriber on the same topic. It writes every messag
 
 InfluxDB 2.7 (`influxdb` service, bucket `weld`, 7-day retention) and `weld_historian_node` are on the `weld` profile. The node subscribes to `cell/weld_snapshot` and writes every snapshot, including joints, process, and alarms. `cell_id` is a tag, so a query can select one cell over a time range. The bridge does not read InfluxDB. `test_weld_line` checks the line protocol. Start with `docker compose --profile weld up weld_historian` from `edge/`. The image must include `cell_historian`.
 
-### 4. Several cells, both stores
+### 4. Several cells, both stores — done
 
-Launch from `edge/` with `docker compose --profile weld up weld_demo`. That starts InfluxDB and one container running `WELD_CELL_07`, `WELD_CELL_08`, `weld_historian_node`, and `weld_cell_bridge_node` (`reduce:=every_n`, `every_n:=5`). The URL and API key come from `cloud/.env`.
+Launch from `edge/` with `docker compose --profile weld up weld_demo`. That starts InfluxDB and one container running `WELD_CELL_07`, `WELD_CELL_08`, `weld_historian_node`, and `weld_cell_bridge_node` (`reduce:=every_n`, `every_n:=5`). The URL and API key come from `cloud/.env`. Publishers and subscribers share that container, so the proof does not depend on DDS across containers.
 
-Prove:
+Observed 2026-11-08:
 
 - The historian has about one point per second per cell, including snapshots the bridge did not POST.
-- DynamoDB has the reduced set for each `cell_id`. With `every_n` at 5, about one stored snapshot per five published, plus any alarm snapshot that fell between those posts.
-- A `GAS_FLOW_LOW` snapshot is in both stores, and CloudWatch still shows `CELL_ALERT`.
+- DynamoDB has the reduced set for each `cell_id`. With `every_n` at 5, about one stored snapshot per five published, plus the alarm snapshot when it falls between those posts.
+- A `GAS_FLOW_LOW` snapshot is in both stores. Both cells faulted on the same tick when the publishers started together. CloudWatch `CELL_ALERT` was not checked. That check is deferred.
 
-Docker Desktop often fails to discover DDS peers across containers. The prove step runs the subscribers in a container that can see the publishers, or records that limit if a second container cannot.
+### 5. Next path — tabled
 
-### 5. Next path — decide only
-
-After the weld path meets the goal, choose one follow-on. Do not start it in this plan.
+Tabled 2026-11-08. The weld path meets the goal. Do not start either follow-on until this step is reopened.
 
 - The original `cell/telemetry` path: the same historian-plus-filter split on `cell_bridge`, leaving `schema_version` 1 batches valid.
 - A mobile-robot publisher and bridge, with its own reduction notes in the filtering doc. No fleet manager in that choice.

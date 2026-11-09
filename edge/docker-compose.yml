@@ -22,6 +22,27 @@ services:
       retries: 12
       start_period: 20s
 
+  # Board for the weld bucket. Reads InfluxDB over HTTP. Does not run ROS nodes.
+  grafana:
+    profiles: ["weld"]
+    image: grafana/grafana:11.4.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: p3
+      GF_SECURITY_ADMIN_PASSWORD: p3-grafana-dev
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      # Defaults rotate the login every 10 minutes, which drops a local board session.
+      GF_AUTH_TOKEN_ROTATION_INTERVAL_MINUTES: "1440"
+      GF_AUTH_LOGIN_MAXIMUM_INACTIVE_LIFETIME_DURATION: "30d"
+      GF_AUTH_LOGIN_MAXIMUM_LIFETIME_DURATION: "90d"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      influxdb:
+        condition: service_healthy
+
   # Writes every cell/weld_snapshot. Does not start a publisher and does not post to the cloud.
   weld_historian:
     profiles: ["weld"]
@@ -110,3 +131,4 @@ services:
 
 volumes:
   influxdb-data:
+  grafana-data:

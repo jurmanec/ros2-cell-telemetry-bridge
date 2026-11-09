@@ -27,3 +27,5 @@ A **local historian** (or plant historian / edge historian) is a time-series dat
 ## Summary
 
 A local historian is the on-site system of record for recent operational data, sitting between the cell/PLC and any higher-level cloud monitoring platform.
+
+In this project the weld historian stores that record in InfluxDB and does not process it further. Flux queries and tasks that could stand in for local trending, a downsampled series, and a windowed watch are described in [local_historian_processing.md](local-historian/local_historian_processing.md).

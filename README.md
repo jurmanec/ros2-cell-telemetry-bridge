@@ -6,11 +6,24 @@ Simulated manufacturing-cell telemetry on a **C++ / ROS 2 Jazzy** edge, batched 
 
 This is an end-to-end **edge → cloud telemetry path** (ROS publisher, HTTPS bridge, API Gateway, Lambda, DynamoDB). It is **not** real sensors, robot control, or ML — alerts in this version are structured `CELL_ALERT` log events, not SNS/Slack.
 
-**Stack:** C++20 · ROS 2 Jazzy (`rclcpp`) · Docker Compose · HTTPS JSON · API Gateway · Python 3.12 Lambda · DynamoDB · Serverless Framework · CloudWatch
+**Stack:** C++20 · ROS 2 Jazzy (`rclcpp`) · Docker Compose · HTTPS JSON · API Gateway · Python 3.12 Lambda · DynamoDB · InfluxDB · Grafana · Serverless Framework · CloudWatch
+
+---
+
+## Slices
+
+Two frozen releases. This branch is the weld slice. The cell path in v1 is unchanged.
+
+| Release | What is frozen |
+|---------|----------------|
+| [v1.0.0](https://github.com/jurmanec/ros2-cell-telemetry-bridge/releases/tag/v1.0.0) | One simulated cell, `cell/telemetry`, full `schema_version` 1 batches to DynamoDB, `CELL_ALERT` in CloudWatch. Shipped list: [docs/SHIPPED.md](https://github.com/jurmanec/ros2-cell-telemetry-bridge/blob/v1.0.0/docs/SHIPPED.md) on that tag. |
+| [v2.0.0](https://github.com/jurmanec/ros2-cell-telemetry-bridge/releases/tag/v2.0.0) | Two weld cells on `cell/weld_snapshot`. InfluxDB keeps every snapshot. The bridge posts every fifth snapshot, plus any snapshot that carries an alarm. |
 
 ---
 
 ## Architecture
+
+v1 cell path:
 
 ```mermaid
 flowchart LR
@@ -22,6 +35,20 @@ flowchart LR
 ```
 
 Flow: publish → batch over HTTPS → validate → persist → on `fault` emit `CELL_ALERT` → [smoke](cloud/scripts/smoke_ingest.py) can assert the chain.
+
+Weld path on this branch:
+
+```mermaid
+flowchart LR
+  Cells["weld_cell_publisher\nWELD_CELL_07 and 08"] --> Topic["cell/weld_snapshot"]
+  Topic --> Hist["weld_historian\nInfluxDB"]
+  Topic --> Bridge["weld_cell_bridge\nevery 5th + alarms"]
+  Hist --> Board["Grafana"]
+  Bridge --> Ingest["API GW + Lambda"]
+  Ingest --> DDB[(DynamoDB)]
+```
+
+`cell_id` is on the snapshot. One plant historian and one bridge subscribe to the same topic. Start the weld demo from [docs/how-to/weld-demo.md](docs/how-to/weld-demo.md).
 
 ---
 
@@ -70,10 +97,12 @@ More: [edge/README.md](edge/README.md)
 
 ## Scope and next steps
 
-**In scope here:** simulated cell → HTTPS bridge → AWS persist + rule alerts in logs.
+**v1, on the v1.0.0 tag:** simulated cell → HTTPS bridge → AWS persist + rule alerts in logs.
 
-**Out of scope:** hardware, control, operator UI, push notifications, learned anomaly models.
+**This branch:** that cell path, plus two weld cells, a local InfluxDB historian, Grafana on that historian, and a reduced cloud copy.
 
-Possible follow-ons: SNS/Slack notify, richer logging, CI, a small model on the Dynamo series.
+**Out of scope:** hardware, control, a bridge on every machine, fleet operations, push notifications, learned anomaly models.
+
+Possible follow-ons: SNS/Slack notify, richer logging, CI, a small model on the Dynamo series. The weld plan's next-path choice is tabled.
 
 Design notes (charter, architecture, milestones): [docs/](docs/) — start with [ARCHITECTURE](docs/ARCHITECTURE.md) and [SHIPPED vs deferred](docs/SHIPPED.md).
