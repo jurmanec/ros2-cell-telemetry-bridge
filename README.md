@@ -4,7 +4,7 @@ Simulated manufacturing-cell telemetry on a **C++ / ROS 2 Jazzy** edge, batched 
 
 **License:** [MIT](LICENSE)
 
-This is an end-to-end **edge → cloud telemetry path** (ROS publisher, HTTPS bridge, API Gateway, Lambda, DynamoDB). It is **not** real sensors, robot control, or ML — alerts in this version are structured `CELL_ALERT` log events, not SNS/Slack.
+This is an end-to-end **edge → cloud telemetry path** (ROS publisher, HTTPS bridge, API Gateway, Lambda, DynamoDB).
 
 **Stack:** C++20 · ROS 2 Jazzy (`rclcpp`) · Docker Compose · HTTPS JSON · API Gateway · Python 3.12 Lambda · DynamoDB · InfluxDB · Grafana · Serverless Framework · CloudWatch
 
@@ -102,7 +102,5 @@ More: [edge/README.md](edge/README.md)
 **This branch:** that cell path, plus two weld cells, a local InfluxDB historian, Grafana on that historian, and a reduced cloud copy.
 
 **Out of scope:** hardware, control, a bridge on every machine, fleet operations, push notifications, learned anomaly models.
-
-Possible follow-ons: SNS/Slack notify, richer logging, CI, a small model on the Dynamo series. The weld plan's next-path choice is tabled.
 
 Design notes (charter, architecture, milestones): [docs/](docs/) — start with [ARCHITECTURE](docs/ARCHITECTURE.md) and [SHIPPED vs deferred](docs/SHIPPED.md).

@@ -1,7 +1,5 @@
 # Local Historian: Physical Location and ROS 2 Integration
 
-**Yes — that model is realistic.**
-
 ## Physical Location
 
 The local historian is an **on-site machine** (or a small cluster of machines) located in the plant, typically:
@@ -40,4 +38,4 @@ Local Historian (ROS 2 node or bridge)
 
 ## Summary
 
-Yes — a local historian is usually a dedicated on-site machine (or service) that subscribes to the cell’s ROS 2 topics (such as `cell/weld_snapshot` and `cell/telemetry`) and keeps a full local record of the telemetry. The bridge then reads from the cell topics or from the historian and decides what reduced stream goes to the cloud.
+A local historian is usually a dedicated on-site machine (or service) that subscribes to the cell’s ROS 2 topics (such as `cell/weld_snapshot` and `cell/telemetry`) and keeps a full local record of the telemetry. The bridge then reads from the cell topics or from the historian and decides what reduced stream goes to the cloud.

@@ -74,7 +74,7 @@ docker compose run --rm --no-deps cell_bridge \
   -p ingest_url:=$INGEST_URL \
   -p api_key:=$INGEST_API_KEY \
   -p batch_size:=5 \
-  -p flush_period_sec:=1.0
+  -p flush_period_sec:=1.0 \
 ```
 
 Do not start the `ingest` stub service for this demo.
