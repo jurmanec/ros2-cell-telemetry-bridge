@@ -25,7 +25,13 @@ target_include_directories(weld_cell_publisher PUBLIC
   $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(weld_cell_publisher rclcpp cell_msgs)
 
-install(TARGETS cell_publisher weld_cell_publisher DESTINATION lib/${PROJECT_NAME})
+add_executable(facility_asset_publisher src/facility_asset_publisher.cpp)
+target_include_directories(facility_asset_publisher PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(facility_asset_publisher rclcpp cell_msgs)
+
+install(TARGETS cell_publisher weld_cell_publisher facility_asset_publisher DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include)
 
 if(BUILD_TESTING)
@@ -39,6 +45,11 @@ if(BUILD_TESTING)
   target_include_directories(test_weld_snapshot PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
   ament_target_dependencies(test_weld_snapshot rclcpp cell_msgs)
+
+  ament_add_gtest(test_facility_snapshot test/test_facility_snapshot.cpp)
+  target_include_directories(test_facility_snapshot PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  ament_target_dependencies(test_facility_snapshot rclcpp cell_msgs)
 endif()
 
 ament_package()

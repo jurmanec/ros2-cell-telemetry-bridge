@@ -150,7 +150,7 @@ Same path as [telemetry-batch-http.md](telemetry-batch-http.md): `POST /v1/telem
 | Field | Type | Notes |
 |-------|------|--------|
 | `schema_version` | number | `2` for this snapshot |
-| `timestamp` | string | UTC RFC 3339 from ROS `stamp`, including the fractional second |
+| `timestamp` | string | UTC RFC 3339 from ROS `stamp`, with nine fractional digits. Ingest stores this string as the DynamoDB sort key, so a second post of the same cell and timestamp replaces the item. |
 | `cell_id` | string | Copied from `WeldCellSnapshot.cell_id` |
 | `joints` | array | One object per `WeldJoint` |
 | `process` | object | The `WeldProcess` fields |

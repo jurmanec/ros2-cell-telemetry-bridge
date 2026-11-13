@@ -1,0 +1,93 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "influxdb", "uid": "facility-historian" },
+      "description": "One line per asset. CRAH-01 and ROOM-01 are degrees C. UPS-01 is percent.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "never",
+            "spanNulls": true
+          },
+          "decimals": 1,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true, "calcs": [] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "facility-historian" },
+          "query": "from(bucket: \"facility\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"facility_asset\" and r._field == \"reading\")\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r.asset_id}))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)",
+          "refId": "A"
+        }
+      ],
+      "title": "Reading",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "influxdb", "uid": "facility-historian" },
+      "description": "RUNNING until a scripted fault latches. CRAH-01 faults at about 3 minutes. ROOM-01 faults at about 6 minutes. UPS-01 stays running. Each bar stops at the last sample, so a stopped demo does not keep its last color out to now.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "custom": { "fillOpacity": 70, "lineWidth": 0, "spanNulls": false },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "color": "green", "index": 0, "text": "RUNNING" },
+                "1": { "color": "red", "index": 1, "text": "FAULTED" }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 10 },
+      "id": 2,
+      "options": {
+        "alignValue": "center",
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "auto",
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "influxdb", "uid": "facility-historian" },
+          "query": "import \"experimental\"\nimport \"internal/debug\"\n\ndata = from(bucket: \"facility\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"facility_asset\" and r._field == \"reading\")\n  |> map(fn: (r) => ({_time: r._time, _value: if r.status == \"FAULTED\" then 1 else 0, _field: r.asset_id}))\n  |> group(columns: [\"_field\"])\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> map(fn: (r) => ({_time: r._time, _value: r._value, _field: r._field}))\n  |> group(columns: [\"_field\"])\n\nends = data\n  |> last()\n  |> map(fn: (r) => ({\n      _time: experimental.addDuration(d: 1s, to: r._time),\n      _value: debug.null(type: \"int\"),\n      _field: r._field,\n    }))\n\nunion(tables: [data, ends])\n  |> group(columns: [\"_field\"])\n  |> sort(columns: [\"_time\"])",
+          "refId": "A"
+        }
+      ],
+      "title": "Status",
+      "type": "state-timeline"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["facility"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timezone": "browser",
+  "title": "Facility historian",
+  "uid": "facility-assets",
+  "version": 3
+}

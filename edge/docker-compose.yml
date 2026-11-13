@@ -1,7 +1,8 @@
 services:
-  # Local time-series store for the weld historian. Not started by a plain `docker compose up`.
+  # Local time-series store. Not started by a plain `docker compose up`.
+  # The weld profile uses bucket weld. The facility profile uses bucket facility.
   influxdb:
-    profiles: ["weld"]
+    profiles: ["weld", "facility"]
     image: influxdb:2.7
     ports:
       - "8086:8086"
@@ -15,6 +16,7 @@ services:
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: p3-historian-dev-token
     volumes:
       - influxdb-data:/var/lib/influxdb2
+      - ./influxdb/init-facility-bucket.sh:/docker-entrypoint-initdb.d/init-facility-bucket.sh:ro
     healthcheck:
       test: ["CMD", "influx", "ping"]
       interval: 5s
@@ -22,9 +24,9 @@ services:
       retries: 12
       start_period: 20s
 
-  # Board for the weld bucket. Reads InfluxDB over HTTP. Does not run ROS nodes.
+  # Boards for the local historians. Reads InfluxDB over HTTP. Does not run ROS nodes.
   grafana:
-    profiles: ["weld"]
+    profiles: ["weld", "facility"]
     image: grafana/grafana:11.4.0
     ports:
       - "3000:3000"
@@ -70,6 +72,20 @@ services:
     volumes:
       - ./scripts/run_weld_demo.sh:/run_weld_demo.sh:ro
     command: ["/run_weld_demo.sh"]
+    depends_on:
+      influxdb:
+        condition: service_healthy
+
+  # Three facility assets, historian, and bridge in one container so they share DDS.
+  # Reads INGEST_URL and INGEST_API_KEY from cloud/.env.
+  facility_demo:
+    profiles: ["facility"]
+    image: ${EDGE_IMAGE:-p3-edge:jazzy}
+    env_file:
+      - ../cloud/.env
+    volumes:
+      - ./scripts/run_facility_demo.sh:/run_facility_demo.sh:ro
+    command: ["/run_facility_demo.sh"]
     depends_on:
       influxdb:
         condition: service_healthy

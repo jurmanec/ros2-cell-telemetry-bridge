@@ -11,6 +11,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/WeldProcess.msg"
   "msg/CellAlarm.msg"
   "msg/WeldCellSnapshot.msg"
+  "msg/FacilityAssetSnapshot.msg"
   DEPENDENCIES builtin_interfaces
 )
 

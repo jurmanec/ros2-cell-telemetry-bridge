@@ -14,7 +14,7 @@ find_package(rclcpp REQUIRED)
 find_package(cell_msgs REQUIRED)
 find_package(CURL REQUIRED)
 
-add_library(cell_historian_line src/weld_line.cpp)
+add_library(cell_historian_line src/weld_line.cpp src/facility_line.cpp)
 target_include_directories(cell_historian_line PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -27,7 +27,14 @@ target_include_directories(weld_historian_node PUBLIC
 target_link_libraries(weld_historian_node cell_historian_line CURL::libcurl)
 ament_target_dependencies(weld_historian_node rclcpp cell_msgs)
 
-install(TARGETS weld_historian_node cell_historian_line
+add_executable(facility_historian_node src/facility_historian_node.cpp src/influx_write.cpp)
+target_include_directories(facility_historian_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_link_libraries(facility_historian_node cell_historian_line CURL::libcurl)
+ament_target_dependencies(facility_historian_node rclcpp cell_msgs)
+
+install(TARGETS weld_historian_node facility_historian_node cell_historian_line
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME})
@@ -38,6 +45,10 @@ if(BUILD_TESTING)
   ament_add_gtest(test_weld_line test/test_weld_line.cpp)
   target_link_libraries(test_weld_line cell_historian_line)
   ament_target_dependencies(test_weld_line cell_msgs)
+
+  ament_add_gtest(test_facility_line test/test_facility_line.cpp)
+  target_link_libraries(test_facility_line cell_historian_line)
+  ament_target_dependencies(test_facility_line cell_msgs)
 endif()
 
 ament_package()

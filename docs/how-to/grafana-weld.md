@@ -50,7 +50,7 @@ The password is applied when the `grafana-data` volume is first created. A volum
 | Bucket | `weld` |
 | Token | `p3-historian-dev-token` |
 
-That token is the same local demo token InfluxDB is initialized with. It is already in `edge/docker-compose.yml`.
+That token is the same local demo token InfluxDB is initialized with. It is already in `edge/docker-compose.yml`. A second file in the same directory, `facility.yml`, points at the `facility` bucket. That board is [facility-demo.md](facility-demo.md).
 
 Open [http://localhost:3000](http://localhost:3000), sign in as `p3`, and go to **Connections → Data sources → Weld historian**. The page should show the Flux source for org `p3` and bucket `weld`. **Save & test** should report that the data source is working, once the `influxdb` container is healthy.
 

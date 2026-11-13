@@ -14,7 +14,7 @@ find_package(rclcpp REQUIRED)
 find_package(cell_msgs REQUIRED)
 find_package(CURL REQUIRED)
 
-add_library(cell_bridge_batch src/batch_json.cpp src/weld_snapshot_json.cpp src/weld_reduce.cpp)
+add_library(cell_bridge_batch src/batch_json.cpp src/weld_snapshot_json.cpp src/facility_snapshot_json.cpp src/weld_reduce.cpp)
 target_include_directories(cell_bridge_batch PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -34,7 +34,14 @@ target_include_directories(weld_cell_bridge_node PUBLIC
 target_link_libraries(weld_cell_bridge_node cell_bridge_batch CURL::libcurl)
 ament_target_dependencies(weld_cell_bridge_node rclcpp cell_msgs)
 
-install(TARGETS cell_bridge_node weld_cell_bridge_node cell_bridge_batch
+add_executable(facility_bridge_node src/facility_bridge_node.cpp src/http_client.cpp)
+target_include_directories(facility_bridge_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_link_libraries(facility_bridge_node cell_bridge_batch CURL::libcurl)
+ament_target_dependencies(facility_bridge_node rclcpp cell_msgs)
+
+install(TARGETS cell_bridge_node weld_cell_bridge_node facility_bridge_node cell_bridge_batch
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME})
@@ -49,6 +56,10 @@ if(BUILD_TESTING)
   ament_add_gtest(test_weld_snapshot_json test/test_weld_snapshot_json.cpp)
   target_link_libraries(test_weld_snapshot_json cell_bridge_batch)
   ament_target_dependencies(test_weld_snapshot_json cell_msgs)
+
+  ament_add_gtest(test_facility_snapshot_json test/test_facility_snapshot_json.cpp)
+  target_link_libraries(test_facility_snapshot_json cell_bridge_batch)
+  ament_target_dependencies(test_facility_snapshot_json cell_msgs)
 
   ament_add_gtest(test_weld_reduce test/test_weld_reduce.cpp)
   target_link_libraries(test_weld_reduce cell_bridge_batch)

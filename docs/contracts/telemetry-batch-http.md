@@ -45,7 +45,7 @@ TLS: **not required for M2 stub** (plain HTTP). Production/M3 should use HTTPS; 
 
 | Field | Type | Notes |
 |-------|------|--------|
-| `schema_version` | number | `1` for v1 |
+| `schema_version` | number | `1` for this body. The same path also accepts the weld body (`2`) and the facility body (`3`) |
 | `cell_id` | string | Copied from `CellTelemetry.cell_id` (publisher parameter; default `cell-001`). One POST is one cell |
 | `samples` | array | One or more samples from `CellTelemetry` |
 | `samples[].stamp_sec` / `stamp_nanosec` | number | From ROS `stamp` |

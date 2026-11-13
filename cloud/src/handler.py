@@ -2,7 +2,7 @@
 M3 ingest Lambda — validate batch, persist to DynamoDB, rule-based alert logs.
 
 Contract: docs/contracts/telemetry-batch-http.md
-ADR: docs/decisions/0003-cloud-floor.md
+ADR: docs/decisions/0003-cloud-floor.md, docs/decisions/0004-snapshot-sort-key.md
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import boto3
 LOG = logging.getLogger()
 LOG.setLevel(logging.INFO)
 
-_UTC_TIMESTAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z$")
+_UTC_TIMESTAMP = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{9}Z$")
 _WELD_STATUSES = {"RUNNING", "FAULTED"}
 _ALARM_SEVERITIES = {"info", "warning", "error"}
 _PROCESS_FIELDS = (
@@ -207,7 +207,7 @@ def validate_weld_snapshot(payload: Any) -> tuple[dict[str, Any], None] | tuple[
 
     timestamp = payload.get("timestamp")
     if not isinstance(timestamp, str) or _UTC_TIMESTAMP.fullmatch(timestamp) is None:
-        return None, "timestamp must be a UTC RFC 3339 string with a fractional second"
+        return None, "timestamp must be a UTC RFC 3339 string with nine fractional digits"
 
     cell_id = payload.get("cell_id")
     if not isinstance(cell_id, str) or not cell_id.strip():
@@ -298,7 +298,7 @@ def validate_weld_snapshot(payload: Any) -> tuple[dict[str, Any], None] | tuple[
 
 
 def snapshot_sort_key(timestamp: str) -> str:
-    return f"{timestamp}#{uuid.uuid4().hex[:8]}"
+    return timestamp
 
 
 def persist_weld_snapshot(snapshot: dict[str, Any]) -> int:
@@ -353,6 +353,103 @@ def evaluate_weld_rules(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
     return alerts
 
 
+def validate_facility_snapshot(payload: Any) -> tuple[dict[str, Any], None] | tuple[None, str]:
+    """Return (snapshot, None) or (None, error_message). schema_version 3 only."""
+    if not isinstance(payload, dict):
+        return None, "body must be a JSON object"
+    if payload.get("schema_version") != 3:
+        return None, "schema_version must be 3"
+
+    timestamp = payload.get("timestamp")
+    if not isinstance(timestamp, str) or _UTC_TIMESTAMP.fullmatch(timestamp) is None:
+        return None, "timestamp must be a UTC RFC 3339 string with nine fractional digits"
+
+    identity: dict[str, str] = {}
+    for field in ("site_id", "hall_id", "asset_id", "asset_type", "unit"):
+        value = payload.get(field)
+        if not isinstance(value, str) or not value.strip():
+            return None, f"{field} must be a non-empty string"
+        identity[field] = value.strip()
+
+    status = payload.get("status")
+    if status not in _WELD_STATUSES:
+        return None, "status must be RUNNING or FAULTED"
+
+    try:
+        reading = _as_number(payload.get("reading"), "reading")
+    except (TypeError, ValueError) as exc:
+        return None, f"invalid numeric field: {exc}"
+
+    alarms = payload.get("alarms")
+    if not isinstance(alarms, list):
+        return None, "alarms must be an array"
+    normalized_alarms: list[dict[str, str]] = []
+    for i, alarm in enumerate(alarms):
+        if not isinstance(alarm, dict):
+            return None, f"alarms[{i}] must be an object"
+        code = alarm.get("code")
+        severity = alarm.get("severity")
+        message = alarm.get("message")
+        if not isinstance(code, str) or not code.strip():
+            return None, f"alarms[{i}].code must be a non-empty string"
+        if severity not in _ALARM_SEVERITIES:
+            return None, f"alarms[{i}].severity must be info, warning, or error"
+        if not isinstance(message, str) or not message.strip():
+            return None, f"alarms[{i}].message must be a non-empty string"
+        normalized_alarms.append(
+            {"code": code.strip(), "severity": severity, "message": message.strip()}
+        )
+
+    return {
+        "timestamp": timestamp,
+        "status": status,
+        "reading": reading,
+        "alarms": normalized_alarms,
+        **identity,
+    }, None
+
+
+def persist_facility_snapshot(snapshot: dict[str, Any]) -> int:
+    table = _table()
+    item = {
+        "pk": snapshot["asset_id"],
+        "sk": snapshot_sort_key(snapshot["timestamp"]),
+        "schema_version": 3,
+        "timestamp": snapshot["timestamp"],
+        "site_id": snapshot["site_id"],
+        "hall_id": snapshot["hall_id"],
+        "asset_id": snapshot["asset_id"],
+        "asset_type": snapshot["asset_type"],
+        "status": snapshot["status"],
+        "reading": _decimal(snapshot["reading"]),
+        "unit": snapshot["unit"],
+        "alarms": snapshot["alarms"],
+        "ingested_at": int(time.time()),
+    }
+    table.put_item(Item=item)
+    return 1
+
+
+def process_facility_snapshot(payload: Any) -> tuple[int, dict[str, Any]]:
+    snapshot, err = validate_facility_snapshot(payload)
+    if snapshot is None:
+        return 400, {"status": "error", "message": err}
+
+    accepted = persist_facility_snapshot(snapshot)
+    LOG.info(
+        json.dumps(
+            {
+                "event": "INGEST_OK",
+                "asset_id": snapshot["asset_id"],
+                "accepted": accepted,
+                "alerts": 0,
+            },
+            separators=(",", ":"),
+        )
+    )
+    return 202, {"status": "ok", "accepted": accepted, "alerts": 0}
+
+
 def process_weld_snapshot(payload: Any) -> tuple[int, dict[str, Any]]:
     snapshot, err = validate_weld_snapshot(payload)
     if snapshot is None:
@@ -377,8 +474,10 @@ def process_weld_snapshot(payload: Any) -> tuple[int, dict[str, Any]]:
 def process_batch(payload: Any) -> tuple[int, dict[str, Any]]:
     if isinstance(payload, dict) and payload.get("schema_version") == 2:
         return process_weld_snapshot(payload)
+    if isinstance(payload, dict) and payload.get("schema_version") == 3:
+        return process_facility_snapshot(payload)
     if isinstance(payload, dict) and payload.get("schema_version") != 1:
-        return 400, {"status": "error", "message": "schema_version must be 1 or 2"}
+        return 400, {"status": "error", "message": "schema_version must be 1, 2, or 3"}
 
     result = validate_and_normalize(payload)
     if result[0] is None:

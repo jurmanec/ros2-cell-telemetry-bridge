@@ -3,7 +3,7 @@
 <package format="3">
   <name>cell_historian</name>
   <version>0.1.0</version>
-  <description>Local weld-snapshot historian. Subscribes to cell/weld_snapshot and writes every message to InfluxDB.</description>
+  <description>Local historian. Subscribes to cell/weld_snapshot and facility/asset_snapshot and writes every message to InfluxDB.</description>
   <maintainer email="dev@example.com">P3 developer</maintainer>
   <license>MIT</license>
 

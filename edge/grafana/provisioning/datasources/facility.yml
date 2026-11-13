@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: Facility historian
+    uid: facility-historian
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    editable: false
+    jsonData:
+      version: Flux
+      organization: p3
+      defaultBucket: facility
+    secureJsonData:
+      token: p3-historian-dev-token
