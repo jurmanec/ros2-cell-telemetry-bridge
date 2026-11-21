@@ -78,13 +78,17 @@ services:
 
   # Three facility assets, historian, and bridge in one container so they share DDS.
   # Reads INGEST_URL and INGEST_API_KEY from cloud/.env.
+  # SCENARIO selects edge/scenarios/<id>.yaml. Unset, it is 002.
   facility_demo:
     profiles: ["facility"]
     image: ${EDGE_IMAGE:-p3-edge:jazzy}
     env_file:
       - ../cloud/.env
+    environment:
+      SCENARIO: ${SCENARIO:-002}
     volumes:
       - ./scripts/run_facility_demo.sh:/run_facility_demo.sh:ro
+      - ./scenarios:/scenarios:ro
     command: ["/run_facility_demo.sh"]
     depends_on:
       influxdb:

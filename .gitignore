@@ -13,7 +13,29 @@
 # Cursor / agent (local session + private profile notes)
 .cursor/
 docs/internal/
-docs/planning/OPEN.md
+docs/_archive/
+docs/archive/
+
+# Docs kept local / not part of the public GitHub surface
+# (how-tos, contracts, decisions, edge schemas, cost, v1, slim v2/v3 stay tracked)
+docs/planning/
+docs/spikes/
+docs/v3/concepts/
+docs/v3/data-center-images/
+docs/v3/arch-discussion/
+docs/v2/bridge_filtering_welding_and_amr.md
+
+# Concept encyclopedia (study notes). Keep how-to/contract appendices public.
+docs/concepts/background/
+docs/concepts/fleet_management_system_intro.md
+docs/concepts/cell_and_fleet_telemetry_samples.md
+docs/concepts/cell_details/mobile_robot_amr_mission_detail.md
+docs/concepts/docker/docker-compose-concepts.md
+docs/concepts/influxdb/influxdb-fields-explanation.md
+docs/concepts/influxdb/weld-example.md
+docs/concepts/local_historian.md
+docs/concepts/local-historian/
+docs/concepts/p3-edge-to-cloud-narrative.md
 
 # Python
 **/__pycache__/

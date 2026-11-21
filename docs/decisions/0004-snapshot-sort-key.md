@@ -24,7 +24,7 @@ Weld and facility items are written with `sk = timestamp#<8 random hex>`. A seco
 
 One asset has one reading at one sample time. The local historian already uses that identity: the Influx point time is the ROS stamp, and a second line for the same asset and stamp overwrites the fields. The cloud item should be the same point.
 
-Key patterns for this hall are surveyed in [telemetry-keys-discussion.md](../v3/arch-discussion/telemetry-keys-discussion.md). This ADR takes the timestamp sort key from that note and leaves the rest of its schema alone.
+This ADR locks the timestamp sort key. Partition identity and the deferred composite / GSI / TTL options are locked in [0005-telemetry-dynamodb-keys.md](0005-telemetry-dynamodb-keys.md).
 
 ## Options considered
 

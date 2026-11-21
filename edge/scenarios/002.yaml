@@ -1,0 +1,53 @@
+# Scenario 002. Escalation and a transient warning. docs/v3/scenarios/002-hall-fault-narrative.md
+facility_crah_01:
+  ros__parameters:
+    site_id: SITE-01
+    hall_id: HALL-01
+    asset_id: CRAH-01
+    asset_type: crah
+    period_sec: 1.0
+    unit: C
+    healthy_reading: 16.0
+    phase_tick: [180]
+    phase_reading: [28.0]
+    phase_status: [FAULTED]
+    phase_code: [COOLING_SUPPLY_HIGH]
+    phase_severity: [warning]
+    phase_message:
+      - Supply air above setpoint.
+
+facility_room_01:
+  ros__parameters:
+    site_id: SITE-01
+    hall_id: HALL-01
+    asset_id: ROOM-01
+    asset_type: room
+    period_sec: 1.0
+    unit: C
+    healthy_reading: 22.0
+    phase_tick: [360, 540]
+    phase_reading: [27.0, 32.0]
+    phase_status: [FAULTED, FAULTED]
+    phase_code: [ROOM_TEMP_HIGH, ROOM_TEMP_HIGH]
+    phase_severity: [warning, error]
+    phase_message:
+      - Hall temperature above recommended limit.
+      - Hall temperature at allowable limit.
+
+facility_ups_01:
+  ros__parameters:
+    site_id: SITE-01
+    hall_id: HALL-01
+    asset_id: UPS-01
+    asset_type: ups
+    period_sec: 1.0
+    unit: pct
+    healthy_reading: 40.0
+    phase_tick: [60, 90]
+    phase_reading: [40.0, 40.0]
+    phase_status: [FAULTED, RUNNING]
+    phase_code: ["UPS_ON_BATTERY", ""]
+    phase_severity: ["warning", ""]
+    phase_message:
+      - UPS on battery after a utility sag.
+      - ""

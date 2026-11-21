@@ -3,8 +3,8 @@
 **Status:** Notes. The facility plan is done through the demo. Start it with [facility-demo.md](../how-to/facility-demo.md).  
 **Date:** 2026-11-12  
 **Follows:** the frozen weld path on [v2.0.0](https://github.com/jurmanec/ros2-cell-telemetry-bridge/releases/tag/v2.0.0). That path stays as it is.  
-**Context:** [facilities-and-software-monitoring.md](../concepts/data-centers/facilities-and-software-monitoring.md)  
-**Plan:** [facility-snapshot-plan.md](facility-snapshot-plan.md)
+**Context:** [facilities-and-software-monitoring.md](data-centers/facilities-and-software-monitoring.md)  
+**Contract:** [facility-asset-snapshot.md](../contracts/facility-asset-snapshot.md)
 
 These notes describe how this repository can supply telemetry for a later monitoring shift. The shift watches a plant, pages a facilities desk, and keeps a record of the response. This repository stops at the cloud copy. It does not decide that an alert fired, and it does not run the shift.
 
@@ -32,15 +32,15 @@ One snapshot is one asset. A page names a unit: this cooling unit, this UPS, thi
 
 ## First hall
 
-Three assets, one scripted cascade.
+Three assets, one scripted cascade. Default demo story: [002-hall-fault-narrative.md](scenarios/002-hall-fault-narrative.md). Simpler latch: [001-hall-fault-narrative.md](scenarios/001-hall-fault-narrative.md).
 
 - A CRAH or CRAC unit goes to a cooling fault. Its supply-air temperature climbs.
 - The hall environment point follows. Room temperature crosses a limit a few minutes later.
-- A UPS in the same hall stays healthy. The page is cooling, not power.
+- A UPS in the same hall stays healthy on 001; on 002 it briefly goes on battery and recovers before the cooling fault.
 
-ROS 2 stands in for the building-management system. The publishers invent the readings, stamp the asset id, and publish one snapshot per asset. The historian and the bridge subscribe. Detail and diagrams: [building-management-system.md](building-management-system.md). Asset identity wants a small set of tags: site, hall, and asset. A handful of halls and asset types, not a series per sensor.
+ROS 2 publishers stand in for a building-management system: they invent the readings, stamp the asset id, and publish one snapshot per asset. The historian and the bridge subscribe. Asset identity uses a small set of tags: site, hall, and asset. A handful of halls and asset types, not a series per sensor.
 
-The software desk is a later fixture. Lost cooling shows up there as hot hosts or lost capacity. That is a second emitter and a handoff, not more points on the facilities pager. See [facilities-and-software-monitoring.md](../concepts/data-centers/facilities-and-software-monitoring.md).
+The software desk is a later fixture. Lost cooling shows up there as hot hosts or lost capacity. That is a second emitter and a handoff, not more points on the facilities pager. See [facilities-and-software-monitoring.md](data-centers/facilities-and-software-monitoring.md).
 
 ---
 

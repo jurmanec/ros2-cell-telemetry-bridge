@@ -6,6 +6,8 @@
 
 **campus (site).** The whole data center. Utility power arrives here and is conditioned in the electrical plant. A campus has one or more buildings and the shared heat rejection outside. Site is another name for the same unit. This simulation stays inside one hall and does not model the campus above it.
 
+**CRAH.** Computer room air handler. A cooling unit in the hall that blows conditioned supply air toward the racks. That supply air is the cooling the hall receives. In the facility demo, `CRAH-01` reports this temperature: 16 °C while healthy, and 28 °C once the scripted cooling fault latches.
+
 **CDU.** Coolant distribution unit. A cooling asset that meters coolant from the loop to its rack rows. Pump speed, valve position, and fouling set that flow. In this simulation CDU 01 feeds rows A and B. CDU 02 feeds rows C and D.
 
 **hall.** The room in a data center building where a block of racks runs. It is the unit where a known IT load, a power feed, and a cooling loop meet. A building holds one or more halls. This simulation stays inside one hall.

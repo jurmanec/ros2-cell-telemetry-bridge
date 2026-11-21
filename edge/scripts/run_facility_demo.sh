@@ -1,10 +1,18 @@
 #!/bin/bash
 # Three facility assets, the local historian, and the facility bridge in one container.
 # InfluxDB is a separate Compose service. INGEST_URL and INGEST_API_KEY come from the environment.
+# SCENARIO selects /scenarios/<id>.yaml. Unset, it is 002.
 set -u
 
 if [[ -z "${INGEST_URL:-}" || -z "${INGEST_API_KEY:-}" ]]; then
   echo "facility_demo: INGEST_URL and INGEST_API_KEY must be set (cloud/.env)" >&2
+  exit 1
+fi
+
+scenario="${SCENARIO:-002}"
+params="/scenarios/${scenario}.yaml"
+if [[ ! -f "${params}" ]]; then
+  echo "facility_demo: scenario file not found: ${params}" >&2
   exit 1
 fi
 
@@ -24,30 +32,15 @@ start() {
 
 start ros2 run cell_sim facility_asset_publisher --ros-args \
   -r __node:=facility_crah_01 \
-  -p site_id:=SITE-01 \
-  -p hall_id:=HALL-01 \
-  -p asset_id:=CRAH-01 \
-  -p asset_type:=crah \
-  -p fault_at_tick:=180 \
-  -p period_sec:=1.0
+  --params-file "${params}"
 
 start ros2 run cell_sim facility_asset_publisher --ros-args \
   -r __node:=facility_room_01 \
-  -p site_id:=SITE-01 \
-  -p hall_id:=HALL-01 \
-  -p asset_id:=ROOM-01 \
-  -p asset_type:=room \
-  -p fault_at_tick:=360 \
-  -p period_sec:=1.0
+  --params-file "${params}"
 
 start ros2 run cell_sim facility_asset_publisher --ros-args \
   -r __node:=facility_ups_01 \
-  -p site_id:=SITE-01 \
-  -p hall_id:=HALL-01 \
-  -p asset_id:=UPS-01 \
-  -p asset_type:=ups \
-  -p fault_at_tick:=0 \
-  -p period_sec:=1.0
+  --params-file "${params}"
 
 start ros2 run cell_historian facility_historian_node --ros-args \
   -p influx_url:=http://influxdb:8086 \

@@ -1,0 +1,44 @@
+# Scenario 001. Six-minute latch. docs/v3/scenarios/001-hall-fault-narrative.md
+facility_crah_01:
+  ros__parameters:
+    site_id: SITE-01
+    hall_id: HALL-01
+    asset_id: CRAH-01
+    asset_type: crah
+    period_sec: 1.0
+    unit: C
+    healthy_reading: 16.0
+    phase_tick: [180]
+    phase_reading: [28.0]
+    phase_status: [FAULTED]
+    phase_code: [COOLING_SUPPLY_HIGH]
+    phase_severity: [warning]
+    phase_message:
+      - Supply air above setpoint.
+
+facility_room_01:
+  ros__parameters:
+    site_id: SITE-01
+    hall_id: HALL-01
+    asset_id: ROOM-01
+    asset_type: room
+    period_sec: 1.0
+    unit: C
+    healthy_reading: 22.0
+    phase_tick: [360]
+    phase_reading: [32.0]
+    phase_status: [FAULTED]
+    phase_code: [ROOM_TEMP_HIGH]
+    phase_severity: [warning]
+    phase_message:
+      - Hall temperature above limit.
+
+facility_ups_01:
+  ros__parameters:
+    site_id: SITE-01
+    hall_id: HALL-01
+    asset_id: UPS-01
+    asset_type: ups
+    period_sec: 1.0
+    unit: pct
+    healthy_reading: 40.0

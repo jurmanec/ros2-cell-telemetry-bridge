@@ -4,9 +4,9 @@ Start here to run the cooling unit, the room, the UPS, the local historian, and 
 
 The container publishes `CRAH-01`, `ROOM-01`, and `UPS-01` on `facility/asset_snapshot` at 1 Hz. The historian writes every snapshot to the InfluxDB bucket `facility`. The bridge posts every 5th snapshot for each asset, and posts any snapshot that carries an alarm.
 
-`CRAH-01` latches `FAULTED` at tick 180 (about 3 minutes) with `COOLING_SUPPLY_HIGH`. `ROOM-01` latches `FAULTED` at tick 360 (about 6 minutes) with `ROOM_TEMP_HIGH`. `UPS-01` stays `RUNNING`.
+The timeline is a file in `edge/scenarios/`. Unset, `SCENARIO` is `002`: the UPS is on battery from tick 60 to 89 and then clears, the cooling unit latches a warning at tick 180, and the room warning at tick 360 becomes `error` at tick 540. The story is [002-hall-fault-narrative.md](../v3/scenarios/002-hall-fault-narrative.md). `SCENARIO=001` is the six-minute latch with no recovery: [001-hall-fault-narrative.md](../v3/scenarios/001-hall-fault-narrative.md).
 
-**Assumption:** `p3-edge:jazzy` is already built and includes `facility_asset_publisher`, `facility_historian_node`, and `facility_bridge_node`. Compose uses that image and does not build it. If an executable is missing, build from `edge/` with `./scripts/build.sh`.
+**Assumption:** `p3-edge:jazzy` is already built and includes `facility_asset_publisher`, `facility_historian_node`, and `facility_bridge_node`. Compose uses that image and does not build it. Build from `edge/` with `./scripts/build.sh` if an executable is missing, or if the image predates the scenario parameters. The scenario files are mounted, so a later edit to a file does not need another image build.
 
 **Prerequisites:** Docker Desktop; the AWS `dev` stack deployed with the `schema_version` 3 handler; `cloud/.env` has `INGEST_URL` and `INGEST_API_KEY` for that stack. The `facility` bucket exists. A fresh InfluxDB volume creates it from `edge/influxdb/init-facility-bucket.sh`. An older volume needs the create command in [influxdb-facility-schema.md](../edge/influxdb-facility-schema.md).
 
@@ -20,7 +20,13 @@ From `edge/`:
 docker compose --profile facility up facility_demo
 ```
 
-That starts InfluxDB, then one container. The container runs the three publishers, `facility_historian_node`, and `facility_bridge_node` (`reduce:=every_n`, `every_n:=5`). `INGEST_URL` and `INGEST_API_KEY` come from `cloud/.env`.
+`SCENARIO=001` selects the other file:
+
+```bash
+SCENARIO=001 docker compose --profile facility up facility_demo
+```
+
+That starts InfluxDB, then one container. The container runs the three publishers, `facility_historian_node`, and `facility_bridge_node` (`reduce:=every_n`, `every_n:=5`). Each publisher reads the block for its node name from `edge/scenarios/<SCENARIO>.yaml`. `INGEST_URL` and `INGEST_API_KEY` come from `cloud/.env`.
 
 The weld demo is a different profile and a different container. Leave it stopped if this demo is the one you want running. Both can share the InfluxDB container. They do not share a ROS graph.
 
@@ -30,7 +36,7 @@ The weld demo is a different profile and a different container. Leave it stopped
 
 InfluxDB keeps every snapshot, including the ones the bridge skips. Read it with [influxdb-facility.md](influxdb-facility.md).
 
-DynamoDB keeps about one item per five snapshots for each asset until a fault latches. After `CRAH-01` or `ROOM-01` faults, every later snapshot for that asset is posted, because each one still carries the alarm. `UPS-01` stays on the one-in-five rule. The partition key is `asset_id`.
+DynamoDB keeps about one item per five snapshots for each asset while it is healthy. An alarm is always posted. On scenario 002, `UPS-01` posts every snapshot from tick 60 through 89, then the one-in-five rule returns. `CRAH-01` posts every snapshot after tick 180. `ROOM-01` posts every snapshot after tick 360, and at tick 540 those items change from `warning` to `error`. The partition key is `asset_id`. The status panel is green or red. The severity change is the alarm field in Influx and in the DynamoDB item.
 
 ---
 
@@ -63,5 +69,6 @@ DynamoDB held 15 items, 5 for each of `CRAH-01`, `ROOM-01`, and `UPS-01`. Each i
 ## Related
 
 - Contract: [facility-asset-snapshot.md](../contracts/facility-asset-snapshot.md)
-- Plan: [facility-snapshot-plan.md](../v3/facility-snapshot-plan.md)
+- Stories: [002-hall-fault-narrative.md](../v3/scenarios/002-hall-fault-narrative.md), [001-hall-fault-narrative.md](../v3/scenarios/001-hall-fault-narrative.md)
+- Facility notes: [facility-telemetry.md](../v3/facility-telemetry.md)
 - Weld demo, unchanged: [weld-demo.md](weld-demo.md)
