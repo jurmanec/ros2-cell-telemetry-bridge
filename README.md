@@ -15,7 +15,7 @@ Three frozen slices. This branch is the facility path. Earlier paths stay as tag
 |---------|-------------|
 | [v1.0.0](https://github.com/jurmanec/ros2-cell-telemetry-bridge/releases/tag/v1.0.0) | One cell on `cell/telemetry`, full `schema_version` 1 batches, `CELL_ALERT` in CloudWatch. [SHIPPED](https://github.com/jurmanec/ros2-cell-telemetry-bridge/blob/v1.0.0/docs/SHIPPED.md) on that tag. |
 | [v2.0.0](https://github.com/jurmanec/ros2-cell-telemetry-bridge/releases/tag/v2.0.0) | Two weld cells on `cell/weld_snapshot`. Influx keeps every snapshot; bridge posts every fifth plus alarms. |
-| v3.0.0 (tag pending) | Hall assets (CRAH / ROOM / UPS) on `facility/asset_snapshot`. Influx bucket `facility`; reduced `schema_version` 3 cloud copy. Timelines in `edge/scenarios/`. |
+| [v3.0.0](https://github.com/jurmanec/ros2-cell-telemetry-bridge/releases/tag/v3.0.0) | Hall assets (CRAH / ROOM / UPS) on `facility/asset_snapshot`. Influx bucket `facility`; reduced `schema_version` 3 cloud copy. Timelines in `edge/scenarios/`. |
 
 ```mermaid
 flowchart LR
